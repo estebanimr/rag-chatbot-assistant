@@ -4,3 +4,4 @@ __pycache__/
 .env
 app/index_store/
 .DS_Store
+debug_dumps/

@@ -1,0 +1,10 @@
+web:
+  - https://www.promtior.ai/
+  - https://www.promtior.ai/service
+  - https://www.promtior.ai/meet-promtior
+  - https://www.promtior.ai/use-cases
+  - https://careers.promtior.ai/
+
+files:
+  - path: doc/promtior_presentation.pdf
+    optional: true
