@@ -5,42 +5,40 @@ from typing import Any
 
 from langchain_community.document_loaders import PyPDFLoader, WebBaseLoader
 from langchain_core.documents import Document
-from app.ingest.utils.debugutils import dumpDocuments
+from app.ingest.utils.debugutils import dump_documents
 
 SOURCE_WEB = "web"
 SOURCE_FILES = "files"
 
 
 
-def loadDocumentsFromWeb(url: str) -> list[Document]:
+def _load_documents_from_web(url: str) -> list[Document]:
     try:
-        loader = WebBaseLoader(url)
+        loader = WebBaseLoader(url, bs_get_text_kwargs={"separator": " ", "strip": True})
         docs = loader.load()
-        dumpDocuments(url, docs)
         return docs
     except Exception as exc:
         print(f"Failed to load URL {url}: {exc}")
         return []
 
 
-def loadDocumentsFromPdf(path: Path) -> list[Document]:
+def _load_documents_from_pdf(path: Path) -> list[Document]:
     try:
         loader = PyPDFLoader(str(path.resolve()))
         docs = loader.load()
-        dumpDocuments(str(path.resolve()), docs)
         return docs
     except Exception as exc:
         print(f"Failed to load PDF {path}: {exc}")
         return []
 
 
-def loadDocumentsFromSources(sources: dict[str, Any]) -> list[Document]:
+def load_documents_from_sources(sources: dict[str, Any]) -> list[Document]:
     documents: list[Document] = []
 
     web_urls = sources.get(SOURCE_WEB) or []
     for url in web_urls:
         if isinstance(url, str) and url.strip():
-            documents.extend(loadDocumentsFromWeb(url))
+            documents.extend(_load_documents_from_web(url))
     """TODO: Refactor this files entries """
     file_entries = sources.get(SOURCE_FILES) or []
     for entry in file_entries:
@@ -53,6 +51,6 @@ def loadDocumentsFromSources(sources: dict[str, Any]) -> list[Document]:
         if not path.exists():
             continue
         if path.suffix.lower() == ".pdf":
-            documents.extend(loadDocumentsFromPdf(path))
+            documents.extend(_load_documents_from_pdf(path))
 
     return documents

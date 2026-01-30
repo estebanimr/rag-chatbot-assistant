@@ -2,20 +2,20 @@ import re
 from os import getenv
 from langchain_core.documents import Document
 
-def _safeFilenameFromUrl(url: str) -> str:
+def _safe_filename_from_url(url: str) -> str:
     """Create a filesystem-safe filename from a URL."""
     safe = re.sub(r"[^a-zA-Z0-9]+", "_", url).strip("_").lower()
     return f"{safe}.txt"
 
 
-def dumpDocuments(url: str, docs: list[Document]) -> None:
+def dump_documents(url: str, docs: list[Document]) -> None:
     dump_dir = getenv("INGEST_DUMP_DIR", "").strip()
     if not dump_dir:
         return
 
     out_dir = Path(dump_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
-    out_path = out_dir / _safeFilenameFromUrl(url)
+    out_path = out_dir / _safe_filename_from_url(url)
 
     if not docs:
         out_path.write_text(f"URL: {url}\n\nNo documents returned.\n", encoding="utf-8")

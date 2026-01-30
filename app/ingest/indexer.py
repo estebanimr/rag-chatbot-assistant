@@ -13,17 +13,16 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from app.config.settings import Settings
 
 
-def timeStamp() -> str:
+def _time_stamp() -> str:
     return datetime.now().strftime("%Y%m%d_%H%M%S")
 
 
-def writePointer(index_dir: Path, run_dir: Path) -> None:
+def _write_pointer(index_dir: Path, run_dir: Path) -> None:
     pointer_path = index_dir / "current.txt"
     pointer_path.write_text(str(run_dir.resolve()), encoding="utf-8")
 
 
-def normalizeDocuments(docs: list[Document]) -> list[Document]:
-    """Normalize whitespace in document content before chunking."""
+def _normalize_documents(docs: list[Document]) -> list[Document]:
     normalized: list[Document] = []
     for doc in docs:
         new_text = " ".join((doc.page_content or "").split())
@@ -31,8 +30,8 @@ def normalizeDocuments(docs: list[Document]) -> list[Document]:
     return normalized
 
 
-def buildIndex(docs: list[Document], settings: Settings) -> int:
-    docs = normalizeDocuments(docs)
+def build_index(docs: list[Document], settings: Settings) -> int:
+    docs = _normalize_documents(docs)
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=settings.chunk_size,
         chunk_overlap=settings.chunk_overlap,
@@ -43,7 +42,7 @@ def buildIndex(docs: list[Document], settings: Settings) -> int:
 
     index_dir = Path(settings.index_dir)
     runs_dir = index_dir / "runs"
-    run_dir = runs_dir / timeStamp()
+    run_dir = runs_dir / _time_stamp()
     run_dir.mkdir(parents=True, exist_ok=True)
 
     embeddings = OllamaEmbeddings(
@@ -62,5 +61,5 @@ def buildIndex(docs: list[Document], settings: Settings) -> int:
     gc.collect()
     time.sleep(0.2)
 
-    writePointer(index_dir, run_dir)
+    _write_pointer(index_dir, run_dir)
     return len(chunks)

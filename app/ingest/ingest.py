@@ -7,11 +7,11 @@ from typing import Any
 import yaml
 
 from app.config.settings import getSettings
-from app.ingest.indexer import buildIndex
-from app.ingest.loaders import loadDocumentsFromSources
+from app.ingest.indexer import build_index
+from app.ingest.loaders import load_documents_from_sources
 
 
-def readSources(path: str) -> dict[str, Any]:
+def _read_sources(path: str) -> dict[str, Any]:
     source_path = Path(path)
     try:
         with source_path.open("r", encoding="utf-8") as handle:
@@ -25,11 +25,11 @@ def readSources(path: str) -> dict[str, Any]:
 
 def main() -> int:
     settings = getSettings()
-    sources = readSources(settings.sources_path)
+    sources = _read_sources(settings.sources_path)
     web_count = len(sources.get("web") or [])
 
-    documents = loadDocumentsFromSources(sources)
-    chunks = buildIndex(documents, settings)
+    documents = load_documents_from_sources(sources)
+    chunks = build_index(documents, settings)
     current_path = Path(settings.index_dir) / "current.txt"
     run_dir = current_path.read_text(encoding="utf-8").strip() if current_path.exists() else ""
 
