@@ -1,5 +1,3 @@
-"""Source loaders for offline ingestion."""
-
 from __future__ import annotations
 
 from pathlib import Path
@@ -7,38 +5,44 @@ from typing import Any
 
 from langchain_community.document_loaders import PyPDFLoader, WebBaseLoader
 from langchain_core.documents import Document
+from app.ingest.utils.debugutils import dumpDocuments
+
+SOURCE_WEB = "web"
+SOURCE_FILES = "files"
 
 
-def _load_web(url: str) -> list[Document]:
-    """Load a single web URL, returning any extracted documents."""
+
+def loadDocumentsFromWeb(url: str) -> list[Document]:
     try:
         loader = WebBaseLoader(url)
-        return loader.load()
+        docs = loader.load()
+        dumpDocuments(url, docs)
+        return docs
     except Exception as exc:
         print(f"Failed to load URL {url}: {exc}")
         return []
 
 
-def _load_pdf(path: Path) -> list[Document]:
-    """Load a single PDF file from disk."""
+def loadDocumentsFromPdf(path: Path) -> list[Document]:
     try:
-        loader = PyPDFLoader(str(path))
-        return loader.load()
+        loader = PyPDFLoader(str(path.resolve()))
+        docs = loader.load()
+        dumpDocuments(str(path.resolve()), docs)
+        return docs
     except Exception as exc:
         print(f"Failed to load PDF {path}: {exc}")
         return []
 
 
-def load_sources(sources: dict[str, Any]) -> list[Document]:
-    """Load documents from web URLs and optional file entries."""
+def loadDocumentsFromSources(sources: dict[str, Any]) -> list[Document]:
     documents: list[Document] = []
 
-    web_urls = sources.get("web") or []
+    web_urls = sources.get(SOURCE_WEB) or []
     for url in web_urls:
         if isinstance(url, str) and url.strip():
-            documents.extend(_load_web(url))
-
-    file_entries = sources.get("files") or []
+            documents.extend(loadDocumentsFromWeb(url))
+    """TODO: Refactor this files entries """
+    file_entries = sources.get(SOURCE_FILES) or []
     for entry in file_entries:
         if not isinstance(entry, dict):
             continue
@@ -49,6 +53,6 @@ def load_sources(sources: dict[str, Any]) -> list[Document]:
         if not path.exists():
             continue
         if path.suffix.lower() == ".pdf":
-            documents.extend(_load_pdf(path))
+            documents.extend(loadDocumentsFromPdf(path))
 
     return documents
