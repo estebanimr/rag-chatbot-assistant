@@ -5,7 +5,6 @@ from typing import Any
 
 from langchain_community.document_loaders import PyPDFLoader, WebBaseLoader
 from langchain_core.documents import Document
-from app.ingest.utils.debugutils import dump_documents
 
 SOURCE_WEB = "web"
 SOURCE_FILES = "files"

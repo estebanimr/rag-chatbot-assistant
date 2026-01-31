@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from os import getenv
 
 
-def getIntEnv(name: str, default: int) -> int:
+def _get_int_env_var(name: str, default: int) -> int:
     raw_value = getenv(name, default)
     try:
         return int(raw_value)
@@ -26,19 +26,19 @@ class Settings:
     max_retries: int
 
 
-def getSettings() -> Settings:
+def get_settings() -> Settings:
     return Settings(
         ollama_base_url=getenv("OLLAMA_BASE_URL", "http://localhost:11434"),
         ollama_chat_model=getenv("OLLAMA_CHAT_MODEL", ""),
         ollama_embed_model=getenv("OLLAMA_EMBED_MODEL", ""),
         sources_path=getenv("SOURCES_PATH", "app/ingest/sources.yaml"),
         index_dir=getenv("INDEX_DIR", "app/index_store"),
-        chunk_size=getIntEnv("CHUNK_SIZE", 1000),
-        chunk_overlap=getIntEnv("CHUNK_OVERLAP", 200),
-        retriever_top_k=getIntEnv("RETRIEVER_TOP_K", 5),
-        request_timeout_seconds=getIntEnv("REQUEST_TIMEOUT_SECONDS", 30),
-        max_retries=getIntEnv("MAX_RETRIES", 3),
+        chunk_size=_get_int_env_var("CHUNK_SIZE", 1000),
+        chunk_overlap=_get_int_env_var("CHUNK_OVERLAP", 400),
+        retriever_top_k=_get_int_env_var("RETRIEVER_TOP_K", 5),
+        request_timeout_seconds=_get_int_env_var("REQUEST_TIMEOUT_SECONDS", 30),
+        max_retries=_get_int_env_var("MAX_RETRIES", 3),
     )
 
 
-settings = getSettings()
+settings = get_settings()
