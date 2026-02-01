@@ -19,7 +19,8 @@ def _time_stamp() -> str:
 
 def _write_pointer(index_dir: Path, run_dir: Path) -> None:
     pointer_path = index_dir / "current.txt"
-    pointer_path.write_text(str(run_dir.resolve()), encoding="utf-8")
+    relative_run_dir = run_dir.relative_to(index_dir)
+    pointer_path.write_text(str(relative_run_dir), encoding="utf-8")
 
 
 def _normalize_documents(docs: list[Document]) -> list[Document]:

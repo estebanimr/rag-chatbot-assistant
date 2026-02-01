@@ -21,9 +21,18 @@ def _load_active_run_dir(settings: Settings) -> Path:
     raw_value = pointer_path.read_text(encoding="utf-8").strip()
     if not raw_value:
         raise ValueError(f"Index pointer is empty: {pointer_path}")
+    if ":" in raw_value:
+        raise ValueError(
+            "Index pointer contains a Windows absolute path. "
+            "Re-run ingestion in the current environment to regenerate it."
+        )
     run_dir = Path(raw_value)
-    if not run_dir.is_absolute():
-        run_dir = index_dir / run_dir
+    if run_dir.is_absolute():
+        raise ValueError(
+            "Index pointer must be a relative path. "
+            "Re-run ingestion in the current environment to regenerate it."
+        )
+    run_dir = index_dir / run_dir
     return run_dir
 
 
