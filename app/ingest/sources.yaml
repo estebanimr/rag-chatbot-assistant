@@ -1,6 +1,5 @@
 web:
   - https://www.promtior.ai/service
-  - https://www.promtior.ai/use-cases
 
 files:
   - path: doc/promtior_presentation.pdf
