@@ -6,7 +6,7 @@ from typing import Any
 
 import yaml
 
-from app.config.settings import getSettings
+from app.config.settings import get_settings
 from app.ingest.indexer import build_index
 from app.ingest.loaders import load_documents_from_sources
 
@@ -24,7 +24,7 @@ def _read_sources(path: str) -> dict[str, Any]:
 
 
 def main() -> int:
-    settings = getSettings()
+    settings = get_settings()
     sources = _read_sources(settings.sources_path)
     web_count = len(sources.get("web") or [])
 
