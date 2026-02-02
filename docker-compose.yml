@@ -1,0 +1,72 @@
+version: "3.9"
+
+services:
+  api:
+    build: .
+    image: rag-chatbot-assistant
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      OLLAMA_BASE_URL: http://ollama:11434
+      INDEX_DIR: /app/app/index_store
+      SOURCES_PATH: /app/app/ingest/sources.yaml
+    depends_on:
+      - ingest
+      - ollama
+    volumes:
+      - index_store:/app/app/index_store
+
+  ingest:
+    build: .
+    image: rag-chatbot-assistant
+    env_file:
+      - .env
+    depends_on:
+      ollama:
+        condition: service_healthy
+      ollama-models-pull:
+        condition: service_completed_successfully
+    volumes:
+      - index_store:/app/app/index_store
+    command: >
+      sh -c 'set -e;
+      if [ "$FORCE_REINDEX" = "1" ]; then
+        python -m app.ingest.ingest;
+      elif [ -f /app/app/index_store/current.txt ]; then
+        echo "Index exists, skipping ingestion.";
+        exit 0;
+      else
+        python -m app.ingest.ingest;
+      fi'
+
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    healthcheck:
+      test: ["CMD-SHELL", "ollama list >/dev/null 2>&1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  ollama-models-pull:
+    image: alpine:3.20
+    env_file:
+      - .env
+    depends_on:
+      ollama:
+        condition: service_healthy
+    command: >
+      sh -c 'set -e;
+      apk add --no-cache curl;
+      until curl -fsS http://ollama:11434/api/tags >/dev/null; do echo "Waiting for Ollama..."; sleep 2; done;
+      curl -fsS -X POST http://ollama:11434/api/pull -H "Content-Type: application/json" -d "{\"name\":\"$OLLAMA_EMBED_MODEL\"}";
+      curl -fsS -X POST http://ollama:11434/api/pull -H "Content-Type: application/json" -d "{\"name\":\"$OLLAMA_CHAT_MODEL\"}"'
+
+volumes:
+  index_store:
+  ollama_data:
