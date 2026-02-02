@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+*.pyc
+app/index_store/
+.git/
+.env
+debug_dumps/

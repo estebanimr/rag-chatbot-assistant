@@ -10,3 +10,10 @@ This repository was created as a technical assessment.
 - Run API: `uvicorn app.api.main:app --reload`
 - Test services: `curl -s http://localhost:8000/rag/invoke -H "Content-Type: application/json" -d "{\"input\":\"What services does Promtior offer?\"}"`
 - Test founded: `curl -s http://localhost:8000/rag/invoke -H "Content-Type: application/json" -d "{\"input\":\"When was Promtior founded?\"}"`
+
+## Local run with Docker
+- Copy env file: `cp .env.example .env` and set `OLLAMA_CHAT_MODEL` / `OLLAMA_EMBED_MODEL`
+- Build and start: `docker compose up --build`
+- Test services: `curl -s http://localhost:8000/rag/invoke -H "Content-Type: application/json" -d "{\"input\":\"What services does Promtior offer?\"}"`
+
+Re-ingest: `FORCE_REINGEST=1 docker compose up --build ingest`
