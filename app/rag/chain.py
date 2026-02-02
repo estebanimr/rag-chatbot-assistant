@@ -1,19 +1,13 @@
 from __future__ import annotations
-
 from pathlib import Path
 from typing import Iterable
-
 from langchain_chroma import Chroma
 from langchain_core.documents import Document
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import Runnable, RunnableLambda, RunnablePassthrough
 from langchain_ollama import ChatOllama, OllamaEmbeddings
-
 from app.config.settings import Settings
-
-_SERVICE_SOURCE_URL = "https://www.promtior.ai/service"
-
 
 def _load_active_run_dir(settings: Settings) -> Path:
     index_dir = Path(settings.index_dir)
@@ -43,21 +37,6 @@ def _format_documents(docs: Iterable[Document]) -> str:
     return "\n\n---\n\n".join(chunks)
 
 
-def _format_service_titles(docs: Iterable[Document]) -> str:
-    titles: list[str] = []
-    for doc in docs:
-        first_line = (doc.page_content or "").split("\n", 1)[0].strip()
-        if first_line:
-            titles.append(first_line)
-    return "\n".join(titles)
-
-
-def _is_services_question(question: str) -> bool:
-    """Check if a question is about services for retrieval routing."""
-    lowered = question.lower()
-    return "service" in lowered or "services" in lowered
-
-
 def build_rag_chain(settings: Settings) -> Runnable:
     run_dir = _load_active_run_dir(settings)
     embeddings = OllamaEmbeddings(
@@ -72,28 +51,12 @@ def build_rag_chain(settings: Settings) -> Runnable:
         search_type="mmr",
         search_kwargs={"k": settings.retriever_top_k, "fetch_k": 20, "lambda_mult": 0.5}
     )
-    services_retriever = vectorstore.as_retriever(
-        search_type="mmr",
-        search_kwargs={
-            "k": settings.retriever_top_k,
-            "fetch_k": 20,
-            "lambda_mult": 0.5,
-            "filter": {"source": _SERVICE_SOURCE_URL},
-        },
-    )
 
     def _retrieve_documents(question: str) -> list[Document]:
-        # Avoid retrieval mixing for services questions by scoping to the service page.
-        if _is_services_question(question):
-            docs = services_retriever.invoke(question)
-            if docs:
-                return docs
         return default_retriever.invoke(question)
 
     def _build_context(question: str) -> str:
         docs = _retrieve_documents(question)
-        if _is_services_question(question):
-            return _format_service_titles(docs)
         return _format_documents(docs)
 
     prompt = ChatPromptTemplate.from_messages(

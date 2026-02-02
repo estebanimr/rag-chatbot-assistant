@@ -42,7 +42,6 @@ def _load_documents_from_pdf(path: Path) -> list[Document]:
 
 
 def _filter_pdf_distractor_pages(docs: list[Document]) -> list[Document]:
-    # Prevent retrieval distractors from cover/guide pages in PDFs.
     distractors = (
         "technical test",
         "functionality",
