@@ -51,8 +51,6 @@ curl -s http://localhost:8000/rag/invoke \
   -d "{\"input\":\"What services does Promtior offer?\"}"
 ```
 
-LangServe provides a playground endpoint when enabled (usually `/rag/playground`).
-
 ## AWS Instance:
 - Call the API using the public IP, e.g.:
 ```
